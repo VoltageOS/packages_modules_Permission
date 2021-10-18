@@ -2023,4 +2023,7 @@ Allow <xliff:g id="app_name" example="Gmail">%4$s</xliff:g> to upload a bug repo
 
     <!-- Descriptions for the warning dialog that shows when permission grant dialog is blocked from streaming to a remote device [CHAR LIMIT=200] -->
     <string name="permission_grant_dialog_streaming_blocked_description">This app is requesting additional permissions, but permissions can’t be granted in a streaming session. Grant the permission on your phone first.</string>
+
+    <!-- Summary text if tracking permission usage is not supported [CHAR LIMIT=60] -->
+    <string name="permission_usage_preference_summary_not_supported">Tracking usage not yet supported</string>
 </resources>
