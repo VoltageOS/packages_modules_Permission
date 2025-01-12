@@ -25,7 +25,9 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.GosPackageState;
+import android.content.pm.GosPackageStateFlag;
 import android.content.pm.PackageManager;
+import android.ext.DerivedPackageFlag;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Process;
@@ -58,7 +60,7 @@ import static com.android.permissioncontroller.sscopes.StorageScopesUtils.arrayL
 import static com.android.permissioncontroller.sscopes.StorageScopesUtils.getFullLabelForPackage;
 import static com.android.permissioncontroller.sscopes.StorageScopesUtils.getStorageScopes;
 import static com.android.permissioncontroller.sscopes.StorageScopesUtils.revokeStoragePermissions;
-import static com.android.permissioncontroller.sscopes.StorageScopesUtils.storageScopesEnabled;
+import static com.android.permissioncontroller.sscopes.StorageScopesUtils.isStorageScopesEnabled;
 
 import static com.android.permissioncontroller.ext.PreferenceFragementUtilsKt.addOrRemove;
 import static com.android.permissioncontroller.ext.PreferenceFragementUtilsKt.createCategory;
@@ -124,7 +126,7 @@ public final class StorageScopesFragment extends PackageExtraConfigFragment {
     }
 
     public void update() {
-        StorageScope[] scopes = getStorageScopes(pkgName);
+        StorageScope[] scopes = getStorageScopes(context, pkgName);
         boolean enabled = scopes != null;
 
         addOrRemove(this, mainSwitch, !enabled);
@@ -199,8 +201,8 @@ public final class StorageScopesFragment extends PackageExtraConfigFragment {
             killUid = true;
         }
 
-        boolean psUpdated = GosPackageState.edit(pkgName)
-                .setFlagsState(GosPackageState.FLAG_STORAGE_SCOPES_ENABLED, enabled)
+        boolean psUpdated = GosPackageState.edit(pkgName, context.getUser())
+                .setFlagState(GosPackageStateFlag.STORAGE_SCOPES_ENABLED, enabled)
                 .setStorageScopes(null) // always empty initially
                 .setKillUidAfterApply(killUid)
                 .setNotifyUidAfterApply(true)
@@ -261,11 +263,7 @@ public final class StorageScopesFragment extends PackageExtraConfigFragment {
     }
 
     void removeScope(StorageScope scope) {
-        GosPackageState ps = GosPackageState.get(pkgName);
-
-        if (ps == null) {
-            return;
-        }
+        GosPackageState ps = GosPackageState.get(pkgName, context.getUser());
 
         StorageScope[] scopesArray = StorageScope.deserializeArray(ps);
         ArrayList<StorageScope> scopesList = arrayListOf(scopesArray);
@@ -278,8 +276,8 @@ public final class StorageScopesFragment extends PackageExtraConfigFragment {
 
         byte[] serializedScopes = StorageScope.serializeArray(scopesArray);
 
-        boolean psUpdated = ps.edit()
-                .addFlags(GosPackageState.FLAG_STORAGE_SCOPES_ENABLED)
+        boolean psUpdated = ps.createEditor(pkgName, context.getUser())
+                .addFlag(GosPackageStateFlag.STORAGE_SCOPES_ENABLED)
                 .setStorageScopes(serializedScopes)
                 .apply();
 
@@ -296,7 +294,7 @@ public final class StorageScopesFragment extends PackageExtraConfigFragment {
     }
 
     void launchPicker(int mode) {
-        StorageScope[] scopes = getStorageScopes(pkgName);
+        StorageScope[] scopes = getStorageScopes(context, pkgName);
         if (scopes == null) {
             pressBack(this);
             return;
@@ -360,8 +358,8 @@ public final class StorageScopesFragment extends PackageExtraConfigFragment {
             return;
         }
 
-        GosPackageState curPkgState = GosPackageState.get(pkgName);
-        if (!storageScopesEnabled(curPkgState)) {
+        GosPackageState curPkgState = GosPackageState.get(pkgName, context.getUser());
+        if (!isStorageScopesEnabled(curPkgState)) {
             // other instance of this fragment updated curPkgState
             pressBack(this);
             return;
@@ -369,7 +367,7 @@ public final class StorageScopesFragment extends PackageExtraConfigFragment {
 
         int scopeFlags = 0;
 
-        if (curPkgState.hasDerivedFlag(GosPackageState.DFLAG_EXPECTS_STORAGE_WRITE_ACCESS)) {
+        if (curPkgState.hasDerivedFlag(DerivedPackageFlag.EXPECTS_STORAGE_WRITE_ACCESS)) {
             scopeFlags |= StorageScope.FLAG_ALLOW_WRITES;
         }
 
@@ -441,8 +439,8 @@ public final class StorageScopesFragment extends PackageExtraConfigFragment {
 
         StorageScope[] scopesArray = currentScopes.toArray(new StorageScope[0]);
 
-        boolean psUpdated = GosPackageState.edit(pkgName)
-                .addFlags(GosPackageState.FLAG_STORAGE_SCOPES_ENABLED)
+        boolean psUpdated = GosPackageState.edit(pkgName, context.getUser())
+                .addFlag(GosPackageStateFlag.STORAGE_SCOPES_ENABLED)
                 .setStorageScopes(StorageScope.serializeArray(scopesArray))
                 .apply();
 
@@ -474,7 +472,7 @@ public final class StorageScopesFragment extends PackageExtraConfigFragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-        if (storageScopesEnabled(pkgName)) {
+        if (isStorageScopesEnabled(context, pkgName)) {
             menuItemTurnOff = menu.add(R.string.scopes_menu_item_turn_off);
             menuItemTurnOff.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         }
@@ -485,7 +483,7 @@ public final class StorageScopesFragment extends PackageExtraConfigFragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (menuItemTurnOff == item) {
-            if (getStorageScopes(pkgName).length == 0) {
+            if (getStorageScopes(context, pkgName).length == 0) {
                 setEnabled(false);
             } else {
                 var b = new AlertDialog.Builder(context);

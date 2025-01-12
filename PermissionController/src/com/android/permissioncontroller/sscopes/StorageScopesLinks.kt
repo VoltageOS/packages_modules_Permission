@@ -26,19 +26,19 @@ object StorageScopesLinks : ExtraPermissionLink() {
     }
 
     override fun getSettingsDeniedRadioButtonSuffix(ctx: Context, packageName: String,
-                                                    packageState: GosPackageState?): String? {
-        if (StorageScopesUtils.storageScopesEnabled(packageState)) {
+                                                    packageState: GosPackageState): String? {
+        if (StorageScopesUtils.isStorageScopesEnabled(packageState)) {
             return " (+ " + ctx.getString(R.string.sscopes) + ")"
         }
 
         return null
     }
 
-    override fun getSettingsLinkText(ctx: Context, packageName: String, packageState: GosPackageState?): CharSequence {
+    override fun getSettingsLinkText(ctx: Context, packageName: String, packageState: GosPackageState): CharSequence {
         return ctx.getText(R.string.sscopes)
     }
 
-    override fun onSettingsLinkClick(fragment: androidx.fragment.app.Fragment, packageName: String, packageState: GosPackageState?) {
+    override fun onSettingsLinkClick(fragment: androidx.fragment.app.Fragment, packageName: String, packageState: GosPackageState) {
         val args = PackageExtraConfigFragment.createArgs(packageName)
         NavHostFragment.findNavController(fragment).navigate(R.id.storage_scopes, args)
     }

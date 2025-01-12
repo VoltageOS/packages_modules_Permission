@@ -992,7 +992,7 @@ public class GrantPermissionsActivity extends SettingsActivity
         }
 
         if (requestCode == REQ_CODE_SETUP_STORAGE_SCOPES) {
-            if (StorageScopesUtils.storageScopesEnabled(mTargetPackage)) {
+            if (StorageScopesUtils.isStorageScopesEnabled(this, mTargetPackage)) {
                 setResultAndFinish();
             }
             return;

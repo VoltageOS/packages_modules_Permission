@@ -22,6 +22,7 @@ import android.app.StorageScope;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.GosPackageState;
+import android.content.pm.GosPackageStateFlag;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
@@ -241,18 +242,18 @@ public class StorageScopesUtils {
         return new ArrayList<>(Arrays.asList(array));
     }
 
-    public static boolean storageScopesEnabled(String pkgName) {
-        return storageScopesEnabled(GosPackageState.get(pkgName));
+    public static boolean isStorageScopesEnabled(Context ctx, String pkgName) {
+        return isStorageScopesEnabled(GosPackageState.get(pkgName, ctx.getUser()));
     }
 
-    public static boolean storageScopesEnabled(@Nullable GosPackageState ps) {
-        return ps != null && ps.hasFlag(GosPackageState.FLAG_STORAGE_SCOPES_ENABLED);
+    public static boolean isStorageScopesEnabled(GosPackageState ps) {
+        return ps.hasFlag(GosPackageStateFlag.STORAGE_SCOPES_ENABLED);
     }
 
     @Nullable
-    static StorageScope[] getStorageScopes(String pkgName) {
-        GosPackageState s = GosPackageState.get(pkgName);
-        if (!storageScopesEnabled(s)) {
+    static StorageScope[] getStorageScopes(Context ctx, String pkgName) {
+        GosPackageState s = GosPackageState.get(pkgName, ctx.getUser());
+        if (!isStorageScopesEnabled(s)) {
             return null;
         }
         return StorageScope.deserializeArray(s);
