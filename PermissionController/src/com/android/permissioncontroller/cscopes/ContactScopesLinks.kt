@@ -41,7 +41,7 @@ object ContactScopesLinks : ExtraPermissionLink() {
     }
 
     override fun isAllowPermissionSettingsButtonBlocked(ctx: Context, packageName: String) =
-            ContactScopesUtils.isContactScopesEnabled(packageName)
+            ContactScopesUtils.isContactScopesEnabled(ctx, packageName)
 
     override fun onAllowPermissionSettingsButtonClick(ctx: Context, packageName: String) {
         AlertDialog.Builder(ctx).run {
@@ -50,7 +50,7 @@ object ContactScopesLinks : ExtraPermissionLink() {
         }
     }
 
-    override fun getSettingsDeniedRadioButtonSuffix(ctx: Context, packageName: String, packageState: GosPackageState?): String? {
+    override fun getSettingsDeniedRadioButtonSuffix(ctx: Context, packageName: String, packageState: GosPackageState): String? {
         if (!ContactScopesUtils.isContactScopesEnabled(packageState)) {
             return null
         }
@@ -59,11 +59,11 @@ object ContactScopesLinks : ExtraPermissionLink() {
         return " (+ $cscopes)"
     }
 
-    override fun getSettingsLinkText(ctx: Context, packageName: String, packageState: GosPackageState?): CharSequence {
+    override fun getSettingsLinkText(ctx: Context, packageName: String, packageState: GosPackageState): CharSequence {
         return ctx.getText(R.string.contact_scopes)
     }
 
-    override fun onSettingsLinkClick(fragment: androidx.fragment.app.Fragment, packageName: String, packageState: GosPackageState?) {
+    override fun onSettingsLinkClick(fragment: androidx.fragment.app.Fragment, packageName: String, packageState: GosPackageState) {
         val args = PackageExtraConfigFragment.createArgs(packageName)
         NavHostFragment.findNavController(fragment).navigate(R.id.contact_scopes, args)
     }

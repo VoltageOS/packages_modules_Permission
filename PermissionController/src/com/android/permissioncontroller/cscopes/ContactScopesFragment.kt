@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.GosPackageState
+import android.content.pm.GosPackageStateFlag
 import android.ext.cscopes.ContactScope
 import android.ext.cscopes.ContactScopesApi
 import android.ext.cscopes.ContactScopesApi.SCOPED_CONTACTS_PROVIDER_AUTHORITY
@@ -103,8 +104,8 @@ class ContactScopesFragment : PackageExtraConfigFragment(), MenuProvider {
     }
 
     override fun update() {
-        val gosPackageState = getGosPackageStateOrDefault()
-        val enabled = gosPackageState.hasFlag(GosPackageState.FLAG_CONTACT_SCOPES_ENABLED)
+        val gosPackageState = getGosPackageState()
+        val enabled = gosPackageState.hasFlag(GosPackageStateFlag.CONTACT_SCOPES_ENABLED)
 
         addOrRemove(mainSwitch, !enabled)
         if (!enabled) {
@@ -304,14 +305,14 @@ class ContactScopesFragment : PackageExtraConfigFragment(), MenuProvider {
     }
 
     fun updateStorage(action: Function<ContactScopesStorage, Boolean>) {
-        val packageState = getGosPackageStateOrPressBack() ?: return
+        val packageState = getGosPackageState()
         val css = ContactScopesStorage.deserialize(packageState)
 
         if (!action.apply(css)) {
             return
         }
 
-        packageState.edit().run {
+        packageState.createEditor(pkgName, context_.user).run {
             setContactScopes(css.serialize())
             applyOrPressBack()
         }
@@ -326,8 +327,8 @@ class ContactScopesFragment : PackageExtraConfigFragment(), MenuProvider {
             }
         }
 
-        GosPackageState.edit(pkgName).run {
-            setFlagsState(GosPackageState.FLAG_CONTACT_SCOPES_ENABLED, enabled)
+        GosPackageState.edit(pkgName, context_.user).run {
+            setFlagState(GosPackageStateFlag.CONTACT_SCOPES_ENABLED, enabled)
             setContactScopes(null)
             setKillUidAfterApply(!enabled)
             setNotifyUidAfterApply(true)
@@ -463,8 +464,7 @@ class ContactScopesFragment : PackageExtraConfigFragment(), MenuProvider {
     override fun onMenuItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.string.cscopes_turn_off -> {
-                val packageState = getGosPackageStateOrPressBack() ?: return true
-                val css = ContactScopesStorage.deserialize(packageState)
+                val css = ContactScopesStorage.deserialize(getGosPackageState())
                 if (css.count == 0) {
                     setContactScopesEnabled(false)
                 } else {

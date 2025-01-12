@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.GosPackageState
+import android.content.pm.GosPackageStateFlag
 import com.android.permissioncontroller.ext.ScopesUtils
 
 const val BUNDLED_CONTACTS_APP_PACKAGE = "com.android.contacts"
@@ -21,13 +22,12 @@ object ContactScopesUtils {
     fun isContactsPermissionGroup(name: String) = PERMISSION_GROUPS.contains(name)
 
     @JvmStatic
-    fun isContactScopesEnabled(packageName: String): Boolean {
-        val ps = GosPackageState.get(packageName)
-        return isContactScopesEnabled(ps)
+    fun isContactScopesEnabled(ctx: Context, packageName: String): Boolean {
+        return isContactScopesEnabled(GosPackageState.get(packageName, ctx.user))
     }
 
-    fun isContactScopesEnabled(ps: GosPackageState?): Boolean {
-        return ps != null && ps.hasFlag(GosPackageState.FLAG_CONTACT_SCOPES_ENABLED)
+    fun isContactScopesEnabled(ps: GosPackageState): Boolean {
+        return ps.hasFlag(GosPackageStateFlag.CONTACT_SCOPES_ENABLED)
     }
 
     private fun getPrefs(ctx: Context) = ctx.getSharedPreferences(CSCOPES_PREFS_NAME, Context.MODE_PRIVATE)
