@@ -1,7 +1,7 @@
 package com.android.permissioncontroller.ext.aauto
 
 import android.Manifest
-import android.app.compat.gms.AndroidAuto
+import android.app.compat.gms.AndroidAutoPackageFlag
 import android.app.compat.gms.GmsUtils
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.GosPackageState
+import android.content.pm.GosPackageStateFlag
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.content.pm.ServiceInfo
@@ -45,7 +46,7 @@ private val PKG_NAME = PackageId.ANDROID_AUTO_NAME
 
 class AndroidAutoConfigFragment : PreferenceFragmentCompat() {
     lateinit var aautoSettingsPref: Preference
-    val pkgFlagPrefs = mutableMapOf<Long, SwitchPreference>()
+    val pkgFlagPrefs = mutableMapOf<Int, SwitchPreference>()
     val packagePrefs = mutableMapOf<String, Preference>()
 
     lateinit var potentialIssues: PreferenceGroup
@@ -75,19 +76,23 @@ class AndroidAutoConfigFragment : PreferenceFragmentCompat() {
         }
 
         screen.addCategory(R.string.permissions_category).apply {
-            addPkgFlagPerm(this, AndroidAuto.PKG_FLAG_GRANT_PERMS_FOR_WIRED_ANDROID_AUTO,
+            addPkgFlagPerm(
+                this, AndroidAutoPackageFlag.GRANT_PERMS_FOR_WIRED_ANDROID_AUTO,
                 R.string.aauto_wired_perms_title,
                 R.string.aauto_wired_perms_confirm,
             )
-            addPkgFlagPerm(this, AndroidAuto.PKG_FLAG_GRANT_PERMS_FOR_WIRELESS_ANDROID_AUTO,
+            addPkgFlagPerm(
+                this, AndroidAutoPackageFlag.GRANT_PERMS_FOR_WIRELESS_ANDROID_AUTO,
                 R.string.aauto_wireless_perms_title,
                 R.string.aauto_wireless_perms_confirm,
             )
-            addPkgFlagPerm(this, AndroidAuto.PKG_FLAG_GRANT_AUDIO_ROUTING_PERM,
+            addPkgFlagPerm(
+                this, AndroidAutoPackageFlag.GRANT_AUDIO_ROUTING_PERM,
                 R.string.audio_routing_perm_title,
                 R.string.audio_routing_perm_confirm,
             )
-            addPkgFlagPerm(this, AndroidAuto.PKG_FLAG_GRANT_PERMS_FOR_ANDROID_AUTO_PHONE_CALLS,
+            addPkgFlagPerm(
+                this, AndroidAutoPackageFlag.GRANT_PERMS_FOR_ANDROID_AUTO_PHONE_CALLS,
                 R.string.aauto_phone_perm_title,
                 R.string.aauto_phone_perm_confirm,
             )
@@ -144,7 +149,7 @@ class AndroidAutoConfigFragment : PreferenceFragmentCompat() {
         update()
     }
 
-    fun addPkgFlagPerm(dst: PreferenceGroup, flag: Long, title: Int, confirmationText: Int, summary: Int = 0): SwitchPreference {
+    fun addPkgFlagPerm(dst: PreferenceGroup, flag: Int, title: Int, confirmationText: Int, summary: Int = 0): SwitchPreference {
         val pref = SwitchPreference(requireContext())
         pref.setTitle(title)
         if (summary != 0) {
@@ -192,7 +197,7 @@ class AndroidAutoConfigFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private fun updatePackageFlag(ctx: Context, flag: Long, flagValue: Boolean) {
+    private fun updatePackageFlag(ctx: Context, flag: Int, flagValue: Boolean) {
         val userId = android.os.Process.myUserHandle().identifier
         GosPackageState.edit(PKG_NAME, userId).run {
             setPackageFlagState(flag, flagValue)
@@ -215,8 +220,8 @@ class AndroidAutoConfigFragment : PreferenceFragmentCompat() {
 
             if (flagValue) {
                 when (flag) {
-                    AndroidAuto.PKG_FLAG_GRANT_PERMS_FOR_WIRED_ANDROID_AUTO,
-                    AndroidAuto.PKG_FLAG_GRANT_PERMS_FOR_WIRELESS_ANDROID_AUTO,
+                    AndroidAutoPackageFlag.GRANT_PERMS_FOR_WIRED_ANDROID_AUTO,
+                    AndroidAutoPackageFlag.GRANT_PERMS_FOR_WIRELESS_ANDROID_AUTO,
                     -> {
                         // this is needed to complete Android Auto initialization
                         pkgManager.sendBootCompletedBroadcastToPackage(PKG_NAME, true, userId)
@@ -260,10 +265,10 @@ class AndroidAutoConfigFragment : PreferenceFragmentCompat() {
 
         potentialIssues.isVisible = aautoVoiceCommandIssues.isVisible
 
-        val ps = GosPackageState.getOrDefault(PKG_NAME)
+        val ps = GosPackageState.get(PKG_NAME, requireContext().user)
 
         pkgFlagPrefs.entries.forEach {
-            it.value.isChecked = ps.hasPackageFlags(it.key)
+            it.value.isChecked = ps.hasPackageFlag(it.key)
         }
 
         packagePrefs.entries.forEach { e ->
