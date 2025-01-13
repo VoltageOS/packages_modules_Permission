@@ -18,11 +18,11 @@ abstract class ExtraPermissionLink {
 
     open fun onAllowPermissionSettingsButtonClick(ctx: Context, packageName: String) {}
 
-    abstract fun getSettingsDeniedRadioButtonSuffix(ctx: Context, packageName: String, packageState: GosPackageState?): String?
+    abstract fun getSettingsDeniedRadioButtonSuffix(ctx: Context, packageName: String, packageState: GosPackageState): String?
 
-    abstract fun getSettingsLinkText(ctx: Context, packageName: String, packageState: GosPackageState?): CharSequence
+    abstract fun getSettingsLinkText(ctx: Context, packageName: String, packageState: GosPackageState): CharSequence
 
-    abstract fun onSettingsLinkClick(fragment: androidx.fragment.app.Fragment, packageName: String, packageState: GosPackageState?)
+    abstract fun onSettingsLinkClick(fragment: androidx.fragment.app.Fragment, packageName: String, packageState: GosPackageState)
 }
 
 private val allExtraPermissionLinks = arrayOf(
@@ -31,11 +31,5 @@ private val allExtraPermissionLinks = arrayOf(
 )
 
 fun getExtraPermissionLink(ctx: Context, packageName: String, groupName: String): ExtraPermissionLink? {
-    val btn = allExtraPermissionLinks.find { it.isVisible(ctx, groupName, packageName) }
-
-    if (btn != null && !GosPackageState.attachableToPackage(packageName)) {
-        return null
-    }
-
-    return btn
+    return allExtraPermissionLinks.find { it.isVisible(ctx, groupName, packageName) }
 }

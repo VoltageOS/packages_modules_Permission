@@ -789,7 +789,7 @@ public class LegacyAppPermissionFragment extends SettingsWithLargeHeader
         Context ctx = requireContext();
 
         String packageName = mPackageName;
-        GosPackageState packageState = GosPackageState.get(packageName);
+        GosPackageState packageState = GosPackageState.get(packageName, ctx.getUser());
 
         String denyItemSuffix = link.getSettingsDeniedRadioButtonSuffix(ctx, packageName, packageState);
 
