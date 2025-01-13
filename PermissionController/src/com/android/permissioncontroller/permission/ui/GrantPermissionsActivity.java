@@ -1154,14 +1154,13 @@ public class GrantPermissionsActivity extends SettingsActivity
 
             if (mForceResultDelivery || (mDelegated || (mViewModel != null && mViewModel.shouldReturnPermissionState()))
                     && mTargetPackage != null) {
-                PackageManager pm = mPackageManager;
-                GosPackageState ps = GosPackageState.get(mTargetPackage);
+                GosPackageState ps = GosPackageState.get(mTargetPackage, getUser());
 
                 for (int i = 0; i < resultPermissions.length; i++) {
                     grantResults[i] =
                             mPackageManager.checkPermission(resultPermissions[i], mTargetPackage);
 
-                    if (ps != null && grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                         if (AppPermissionUtils.shouldSpoofPermissionRequestResult(ps, resultPermissions[i])) {
                             grantResults[i] = PackageManager.PERMISSION_GRANTED;
                         }
@@ -1331,15 +1330,11 @@ public class GrantPermissionsActivity extends SettingsActivity
 
     private boolean mForceResultDelivery;
 
-    private static List<String> filterRequestedPermissionsForViewModel(String packageName, List<String> requestedPermissions) {
-        GosPackageState ps = GosPackageState.get(packageName);
-
-        if (ps == null) {
-            return requestedPermissions;
-        }
+    private List<String> filterRequestedPermissionsForViewModel(String packageName, List<String> requestedPermissions) {
+        GosPackageState ps = GosPackageState.get(packageName, getUser());
 
         return requestedPermissions.stream()
                 .filter(perm -> !AppPermissionUtils.shouldSkipPermissionRequestDialog(ps, perm))
-                .collect(Collectors.toList());
+                .toList();
     }
 }
