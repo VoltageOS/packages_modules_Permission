@@ -81,15 +81,15 @@ The network permission will also be allowed, it’s needed for communication wit
     <string name="gmscore_settings">Play services permissions</string>
     <string name="gmscore_settings_summary_disabled">Google Play services is disabled</string>
     <string name="rcs_activation_category">RCS activation</string>
-    <string name="gmscore_icc_auth_perms_title">Allow ICC authentication with device identifiers</string>
+    <string name="gmscore_icc_auth_perms_title">Disable ICC authentication with device identifiers</string>
     <string name="gmscore_icc_auth_perms_confirm">
-"This permission allows Google Play services to:
+"This will prevent Google Play services from:
 
-• Use your SIM (ICC-based authentication) and device identifiers to authenticate with your mobile carrier
+ • Using your SIM (ICC-based authentication) and device identifiers to authenticate with your mobile carrier
+ 
+Some carriers require an entitlement check (GSMA TS.43 with EAP-AKA authentication) to activate RCS in Google Messages. Disabling this permission will prevent Google Play services from using your SIM to complete the EAP-AKA challenge-response from the carrier's entitlement server.
+ 
+If you are experiencing issues activating RCS, do not enable this toggle."
 
-Google Play services should also be granted the Phone permission, and Google Messages should be granted the default SMS app role.
-
-Some carriers require an entitlement check (GSMA TS.43 with EAP-AKA authentication) to activate RCS in Google Messages. This permission allows Google Play services to use your SIM to complete the EAP-AKA challenge-response from the carrier's entitlement server.
-"
 </string>
 </resources>
