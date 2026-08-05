@@ -43,4 +43,7 @@
     <string name="advanced_privacy_title" msgid="1117725225706176643">"更多隐私设置"</string>
     <string name="advanced_privacy_summary" msgid="2281203390575069543">"自动填充、活动记录控制选项等"</string>
     <string name="advanced_privacy_search_terms" msgid="5044404599789175222"></string>
+    <string name="exploit_protection_title">漏洞利用保护</string>
+    <string name="exploit_protection_summary">设备和应用安全增强</string>
+    <string name="exploit_protection_search_terms">漏洞利用, 漏洞保护, 安全加固, Exploit, protection, security</string>
 </resources>
